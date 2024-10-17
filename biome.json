@@ -1,0 +1,22 @@
+{
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "style": {
+        "noUselessElse": "off",
+        "noNonNullAssertion": "off"
+      },
+      "suspicious": {
+        "noExplicitAny": "off",
+        "noShadowRestrictedNames": "off"
+      }
+    }
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "lineWidth": 89
+  },
+  "organizeImports": {
+    "enabled": false
+  }
+}
