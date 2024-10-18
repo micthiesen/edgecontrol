@@ -31,11 +31,6 @@ export async function getSshConnection(): Promise<SNodeSSH> {
     return result.stdout;
   };
 
-  await ssh.execSafe("export PS1=true​");
-  await ssh.execSafe("export _OFR_CONFIGURE=ok​");
-  await ssh.execSafe("source ~/.bashrc");
-  await ssh.execSafe("alias");
-
   return ssh;
 }
 
@@ -46,41 +41,27 @@ async function withShell(
   let stdout = "";
   let stderr = "";
 
-  await ssh.withShell(
-    async (channel) => {
-      return new Promise<void>((resolve, reject) => {
-        channel.on("data", (data: Buffer) => {
-          stdout += data.toString();
-        });
-
-        channel.stderr.on("data", (data: Buffer) => {
-          stderr += data.toString();
-        });
-
-        channel.on("close", () => {
-          resolve();
-        });
-
-        channel.on("error", (err: any) => {
-          reject(err);
-        });
-
-        channel.write(`${command}\nexit\n`);
+  await ssh.withShell(async (channel) => {
+    return new Promise<void>((resolve, reject) => {
+      channel.on("data", (data: Buffer) => {
+        stdout += data.toString();
       });
-    },
-    {
-      modes: {
-        ECHO: 1, // Enable echoing
-        ICANON: 1, // Enable canonical input
-        ISIG: 1, // Enable signals like INTR, QUIT, SUSP
-        IEXTEN: 1, // Enable extensions
-        OPOST: 1, // Enable output processing
-        ONLCR: 1, // Translate newline to CR-NL
-        TTY_OP_ISPEED: 9600, // Input baud rate
-        TTY_OP_OSPEED: 9600, // Output baud rate
-      },
-    },
-  );
+
+      channel.stderr.on("data", (data: Buffer) => {
+        stderr += data.toString();
+      });
+
+      channel.on("close", () => {
+        resolve();
+      });
+
+      channel.on("error", (err: any) => {
+        reject(err);
+      });
+
+      channel.write(`configure\n${command}\ncommit\nsave\nexit\nexit\n`);
+    });
+  });
 
   return { stdout: extractCommandOutput(stdout), stderr };
 }
