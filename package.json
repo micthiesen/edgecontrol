@@ -2,10 +2,9 @@
   "name": "edgecontrol",
   "version": "0.0.0",
   "private": true,
-  "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "build": "tsc --outDir dist src/index.ts",
     "typecheck": "tsc --noEmit",
     "lint": "biome lint .",
     "format": "biome format .",
