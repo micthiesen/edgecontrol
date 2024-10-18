@@ -3,7 +3,7 @@ import { Hono } from "hono";
 
 const app = new Hono<{ Bindings: HttpBindings }>();
 
-app.get("/", (c) => {
+app.get("/toggle-dns", (c) => {
   const resp = c.text("Hono meets Node.js");
   console.log(`${c.env.incoming.method} ${c.env.incoming.url}`);
   return resp;
