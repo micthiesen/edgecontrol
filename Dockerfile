@@ -1,21 +1,21 @@
-FROM node:16-slim AS frontend-build
+FROM node:16-slim AS build
 
-COPY packages/frontend /build
+COPY . /build
 WORKDIR /build
-RUN npm install
+RUN npm install -g pnpm
+RUN pnpm install --prod --frozen-lockfile
 
 ENV NODE_ENV=production
-RUN npm run build
+RUN pnpm run build
 
-FROM python:3.10-slim
-ENV PYTHONUNBUFFERED=1
+FROM node:20-slim
+ENV NODE_ENV=production
 
-COPY --from=frontend-build /build/dist /www
+COPY --from=build /build/dist /app
 
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-RUN rm requirements.txt
+WORKDIR /app
+RUN npm install -g pnpm
+RUN pnpm install --production
 
-COPY packages/backend /app
-EXPOSE 5777:5777
-ENTRYPOINT [ "python", "/app/main.py" ]
+EXPOSE 5888
+CMD ["node", "main.js"]

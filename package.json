@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
+    "build": "tsc",
     "typecheck": "tsc --noEmit",
     "lint": "biome lint .",
     "format": "biome format .",
