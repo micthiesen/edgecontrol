@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "dotenvx run -- tsx watch src/index.ts",
     "build": "tsc --outDir dist src/index.ts",
     "typecheck": "tsc --noEmit",
     "lint": "biome lint .",
@@ -17,6 +17,7 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.3",
     "@types/node": "^20.11.17",
+    "@dotenvx/dotenvx": "^1.2.0",
     "typescript": "^5.0.4",
     "tsx": "^4.7.1"
   },
