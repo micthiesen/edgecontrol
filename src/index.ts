@@ -3,6 +3,10 @@ import { Hono } from "hono";
 import { NodeSSH } from "node-ssh";
 import { z } from "zod";
 
+type SNodeSSH = NodeSSH & {
+  execSafe: (command: string) => Promise<string>;
+};
+
 const ALT_DNS_SERVERS: [string, string] = ["1.1.1.1", "1.0.0.1"];
 
 const env = z
@@ -24,10 +28,11 @@ app.get("/toggle-dns", async (c) => {
   if (timeoutId) clearTimeout(timeoutId);
   console.log(`${c.env.incoming.method} ${c.env.incoming.url}`);
 
-  let ssh: NodeSSH | undefined;
+  let ssh: SNodeSSH | undefined;
   try {
     ssh = await getSshConnection();
-    const result = await ssh.execCommand("cat /config/config.boot | grep 'dns-server'");
+    const result = await ssh.execSafe("show");
+    return c.text(`Resp: ${result}`);
     if (result.stderr) return c.text(`Error: ${result.stderr}`);
 
     const originalDnsServers = extractDnsServers(result.stdout);
@@ -41,6 +46,8 @@ app.get("/toggle-dns", async (c) => {
 
     const resp = c.text("Hono meets Node.js");
     return resp;
+  } catch (err: any) {
+    return c.text(`Error: ${err.message}`);
   } finally {
     if (ssh) ssh.dispose();
   }
@@ -53,7 +60,7 @@ serve({ fetch: app.fetch, port: 5888 }, (info) => {
 function genRestoreDnsServers(originalDnsServers: [string, string]) {
   return async () => {
     console.log("Restoring original DNS servers...");
-    let ssh: NodeSSH | undefined;
+    let ssh: SNodeSSH | undefined;
     try {
       ssh = await getSshConnection();
       await setDnsServers(ssh, originalDnsServers);
@@ -63,18 +70,34 @@ function genRestoreDnsServers(originalDnsServers: [string, string]) {
   };
 }
 
-async function setDnsServers(ssh: NodeSSH, dns: [string, string]) {
+async function setDnsServers(ssh: SNodeSSH, dns: [string, string]) {
   console.log(`Setting DNS servers to ${dns}`);
+  // ssh.execCommand(`configure set service dns forwarding name-server ${dns[0]}`);
+  // ssh.execCommand(`configure set service dns forwarding name-server ${dns[1]}`);
 }
 
-async function getSshConnection(): Promise<NodeSSH> {
-  const ssh = new NodeSSH();
+async function getSshConnection(): Promise<SNodeSSH> {
+  const ssh = new NodeSSH() as SNodeSSH;
   await ssh.connect({
     host: env.ROUTER_HOSTNAME,
     username: env.SSH_USERNAME,
     password: env.SSH_PASSWORD,
     tryKeyboard: false,
   });
+  ssh.execSafe = async (command: string) => {
+    console.log(command);
+    const result = await ssh.execCommand(command);
+    if (result.stderr) console.warn(result.stderr);
+    if (result.stderr) throw new Error(`Error executing command: ${result.stderr}`);
+    if (result.stdout) console.log(result.stdout);
+    return result.stdout;
+  };
+
+  await ssh.execSafe("export PS1=true​");
+  await ssh.execSafe("export _OFR_CONFIGURE=ok​");
+  await ssh.execSafe("source ~/.bashrc");
+  await ssh.execSafe("alias");
+
   return ssh;
 }
 
@@ -85,4 +108,10 @@ function extractDnsServers(text: string): [string, string] {
   if (matches.length === 2) return [matches[0], matches[1]];
 
   throw new Error(`Could not extract DNS servers: ${text}`);
+}
+
+async function execSafe(ssh: NodeSSH, command: string) {
+  const result = ssh.execCommand(command);
+  if (result.stderr) throw new Error(`Error executing command: ${result.stderr}`);
+  return result.stdout;
 }
