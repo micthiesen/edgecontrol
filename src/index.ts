@@ -1,5 +1,13 @@
 import { type HttpBindings, serve } from "@hono/node-server";
 import { Hono } from "hono";
+import { z } from "zod";
+
+const env = z
+  .object({
+    PUSHOVER_USER: z.string(),
+    PUSHOVER_TOKEN: z.string(),
+  })
+  .parse(process.env);
 
 const app = new Hono<{ Bindings: HttpBindings }>();
 
