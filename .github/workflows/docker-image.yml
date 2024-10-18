@@ -15,18 +15,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
       - uses: actions/setup-node@v4
         with:
-          node-version: "14"
+          node-version: "20"
           cache: "pnpm"
-      - name: Install pnpm
-        run: npm install -g pnpm
-      - name: Install dependencies
-        run: pnpm install
-      - name: Run linters
-        run: npm run check
-      - name: Run typecheck
-        run: npm run typecheck
+      - run: pnpm install
+      - run: npm run check
+      - run: npm run typecheck
 
   push:
     needs: lint
