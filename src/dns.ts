@@ -9,7 +9,15 @@ const ALT_DNS_SERVERS: [string, string] = ["1.1.1.1", "1.0.0.1"];
 export async function toggleDns(ssh: SNodeSSH) {
   if (timeoutId) clearTimeout(timeoutId);
 
-  const originalDnsServers = parseDnsServers(await ssh.execSafe("show"));
+  await ssh.shellSafe("echo $");
+  await ssh.shellSafe("echo $SHELL");
+  await ssh.shellSafe("echo $TERM");
+  await ssh.shellSafe("echo $-");
+  await ssh.shellSafe("shopt login_shell");
+
+  const originalDnsServers = parseDnsServers(
+    await ssh.shellSafe("show dns forwarding nameservers"),
+  );
   console.log(`Found existing DNS servers: ${originalDnsServers}`);
 
   console.log("Setting alternative DNS servers...");

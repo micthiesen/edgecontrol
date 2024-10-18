@@ -14,6 +14,7 @@ app.get("/toggle-dns", async (c) => {
     await toggleDns(ssh);
     return c.text("DNS servers toggled");
   } catch (err: any) {
+    console.warn(err.message);
     return c.text(`Error: ${err.message}`);
   } finally {
     if (ssh) ssh.dispose();
@@ -21,5 +22,5 @@ app.get("/toggle-dns", async (c) => {
 });
 
 serve({ fetch: app.fetch, port: 5888 }, (info) => {
-  console.log(`\nListening on http://localhost:${info.port}`);
+  console.log(`Listening on http://localhost:${info.port}`);
 });
