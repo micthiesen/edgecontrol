@@ -2,7 +2,7 @@ import env from "./env";
 import { getSshConnection, type SNodeSSH } from "./ssh";
 
 let timeoutId: NodeJS.Timeout | null = null;
-const RESTORE_DELAY = 1000 * 5;
+const RESTORE_DELAY = 1000 * 60 * 2;
 
 export async function toggleDns(ssh: SNodeSSH) {
   if (timeoutId) clearTimeout(timeoutId);
