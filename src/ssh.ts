@@ -3,7 +3,7 @@ import env from "./env";
 
 export type SNodeSSH = NodeSSH & {
   execSafe: (command: string) => Promise<string>;
-  shellSafe: (command: string) => Promise<string>;
+  configure: (commands: string[]) => Promise<string>;
 };
 
 export async function getSshConnection(): Promise<SNodeSSH> {
@@ -22,9 +22,9 @@ export async function getSshConnection(): Promise<SNodeSSH> {
     if (result.stdout) console.log(prefixBar(result.stdout));
     return result.stdout;
   };
-  ssh.shellSafe = async (command: string) => {
-    console.log(`>>> ${command}`);
-    const result = await withShell(ssh, command);
+  ssh.configure = async (commands: string[]) => {
+    for (const command of commands) console.log(`>>> ${command}`);
+    const result = await configure(ssh, commands);
     if (result.stderr) console.warn(prefixBar(result.stderr));
     if (result.stderr) throw new Error(`Error executing command: ${result.stderr}`);
     if (result.stdout) console.log(prefixBar(result.stdout));
@@ -34,9 +34,9 @@ export async function getSshConnection(): Promise<SNodeSSH> {
   return ssh;
 }
 
-async function withShell(
+async function configure(
   ssh: SNodeSSH,
-  command: string,
+  commands: string[],
 ): Promise<{ stdout: string; stderr: string }> {
   let stdout = "";
   let stderr = "";
@@ -59,7 +59,7 @@ async function withShell(
         reject(err);
       });
 
-      channel.write(`configure\n${command}\ncommit\nsave\nexit\nexit\n`);
+      channel.write(`configure\n${commands.join("\n")}\ncommit\nsave\nexit\nexit\n`);
     });
   });
 
