@@ -1,6 +1,9 @@
 import { type HttpBindings, serve } from "@hono/node-server";
 import { Hono } from "hono";
+import ssh from "ssh2";
 import { z } from "zod";
+
+ssh.createAgent(socketPath);
 
 const env = z
   .object({
