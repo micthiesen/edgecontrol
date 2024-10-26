@@ -6,7 +6,19 @@ export type SNodeSSH = NodeSSH & {
   configure: (commands: string[]) => Promise<string>;
 };
 
-export async function getSshConnection(): Promise<SNodeSSH> {
+export async function withSshConnection<T>(
+  fn: (ssh: SNodeSSH) => Promise<T>,
+): Promise<T> {
+  let ssh: SNodeSSH | undefined;
+  try {
+    ssh = await getSshConnection();
+    return await fn(ssh);
+  } finally {
+    if (ssh) ssh.dispose();
+  }
+}
+
+async function getSshConnection(): Promise<SNodeSSH> {
   const ssh = new NodeSSH() as SNodeSSH;
   await ssh.connect({
     host: env.ROUTER_HOSTNAME,

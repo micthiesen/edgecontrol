@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const dnsRegex = /dns-server\s+([\d.]+)/g;
+const dnsRegex = /(?:dns|name)-server\s+([\d.]+)/g;
 const dnsSchema = z
   .string()
   .transform((text) => Array.from(text.matchAll(dnsRegex)).map((match) => match[1]))
