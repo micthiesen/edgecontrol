@@ -5,7 +5,7 @@ import { withSshConnection, type SNodeSSH } from "./ssh.js";
 import { arrayItemsEqual } from "./utils.js";
 
 let timeoutId: NodeJS.Timeout | null = null;
-export const RESTORE_DELAY_MINUTES = 2;
+export const RESTORE_DELAY_MINUTES = 5;
 const RESTORE_DELAY = 1000 * 60 * RESTORE_DELAY_MINUTES;
 
 export async function toggleDns(ssh: SNodeSSH) {
