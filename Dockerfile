@@ -1,22 +1,26 @@
-FROM node:20-slim AS build
+# Use a specific Node.js version as a base image
+FROM node:20.16.0-slim
 
-COPY . /build
-WORKDIR /build
+# Enable corepack
+RUN corepack enable
 
-RUN npm install -g pnpm@9
-RUN pnpm install --frozen-lockfile
-RUN pnpm run build
-
-FROM node:20-slim
-ENV NODE_ENV=production
-
-COPY --from=build /build/dist /app
-
+# Set working directory
 WORKDIR /app
+
+# Copy package.json and pnpm-lock.yaml
 COPY package.json pnpm-lock.yaml ./
 
-RUN npm install -g pnpm@9
-RUN pnpm install --production
+# Install pnpm and project dependencies
+RUN corepack prepare pnpm@latest --activate && pnpm install
 
-EXPOSE 5888
-CMD ["node", "/app/index.js"]
+# Copy the rest of the application code
+COPY . .
+
+# Build the TypeScript code
+RUN pnpm run build
+
+# Expose port 3000
+EXPOSE 3000
+
+# Command to run the application
+CMD ["node", "dist/index.js"]

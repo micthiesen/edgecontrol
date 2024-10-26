@@ -2,10 +2,10 @@ import { type HttpBindings, serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { logger } from "hono/logger";
 import { timeout } from "hono/timeout";
-import { RESTORE_DELAY_MINUTES, toggleDns, validateDns } from "./dns";
-import env from "./env";
-import { sendNotification } from "./notify";
-import { withSshConnection } from "./ssh";
+import { RESTORE_DELAY_MINUTES, toggleDns, validateDns } from "./dns.js";
+import env from "./env.js";
+import { sendNotification } from "./notify.js";
+import { withSshConnection } from "./ssh.js";
 
 const app = new Hono<{ Bindings: HttpBindings }>();
 app.use(logger(), timeout(15000));

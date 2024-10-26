@@ -1,5 +1,5 @@
 import { NodeSSH } from "node-ssh";
-import env from "./env";
+import env from "./env.js";
 
 export type SNodeSSH = NodeSSH & {
   execSafe: (command: string) => Promise<string>;

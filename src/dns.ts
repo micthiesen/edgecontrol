@@ -1,8 +1,8 @@
-import env from "./env";
-import { sendNotification, type PushoverMessage } from "./notify";
-import { parseDnsServers } from "./parsing";
-import { withSshConnection, type SNodeSSH } from "./ssh";
-import { arrayItemsEqual } from "./utils";
+import env from "./env.js";
+import { sendNotification, type PushoverMessage } from "./notify.js";
+import { parseDnsServers } from "./parsing.js";
+import { withSshConnection, type SNodeSSH } from "./ssh.js";
+import { arrayItemsEqual } from "./utils.js";
 
 let timeoutId: NodeJS.Timeout | null = null;
 export const RESTORE_DELAY_MINUTES = 2;

@@ -1,6 +1,6 @@
 import https from "node:https";
 import { URLSearchParams } from "node:url";
-import env from "./env";
+import env from "./env.js";
 
 export interface PushoverMessage {
   message: string;
