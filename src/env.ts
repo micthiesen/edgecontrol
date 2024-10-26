@@ -7,6 +7,7 @@ const dnsSchema = z
 
 const env = z
   .object({
+    AUTH_TOKEN: z.string(),
     PUSHOVER_USER: z.string(),
     PUSHOVER_TOKEN: z.string(),
     SSH_USERNAME: z.string(),

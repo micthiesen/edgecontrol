@@ -25,25 +25,32 @@ export async function validateDns(ssh: SNodeSSH): Promise<PushoverMessage> {
 
   if (arrayItemsEqual(currentDnsServers, env.PRIMARY_DNS_SERVERS)) {
     return {
-      title: "DNS Servers are valid",
+      title: "DNS servers are valid",
       message: `Servers: ${currentDnsServers.join(", ")}`,
     };
   } else {
     await setDnsServers(ssh, env.PRIMARY_DNS_SERVERS);
     console.log(`DNS servers restored to ${env.PRIMARY_DNS_SERVERS}`);
     return {
-      title: "DNS Servers restored",
+      title: "DNS servers restored",
       message: `Servers: ${currentDnsServers.join(", ")}`,
     };
   }
 }
 
 async function restoreDnsServers() {
-  console.log("Restoring original DNS servers...");
-  await withSshConnection(async (ssh) => {
-    await setDnsServers(ssh, env.PRIMARY_DNS_SERVERS);
-  });
-  await sendNotification({ title: "NextDNS re-enabled", message: "" });
+  try {
+    console.log("Restoring original DNS servers...");
+    await withSshConnection(async (ssh) => {
+      await setDnsServers(ssh, env.PRIMARY_DNS_SERVERS);
+    });
+    await sendNotification({
+      title: "NextDNS re-enabled",
+      message: `Restored after ${RESTORE_DELAY_MINUTES} minutes`,
+    });
+  } catch (err) {
+    console.error(`Failed to restore DNS servers: ${err}`);
+  }
 }
 
 async function getDnsServers(ssh: SNodeSSH) {

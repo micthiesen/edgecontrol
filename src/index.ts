@@ -3,11 +3,17 @@ import { Hono } from "hono";
 import { logger } from "hono/logger";
 import { timeout } from "hono/timeout";
 import { RESTORE_DELAY_MINUTES, toggleDns, validateDns } from "./dns";
+import env from "./env";
 import { sendNotification } from "./notify";
 import { withSshConnection } from "./ssh";
 
 const app = new Hono<{ Bindings: HttpBindings }>();
-app.use(logger(), timeout(10000));
+app.use(logger(), timeout(15000));
+app.use(async (ctx, next) => {
+  const token = ctx.req.query("token");
+  if (token !== env.AUTH_TOKEN) return ctx.text("Unauthorized", 401);
+  return next();
+});
 app.onError(async (err, ctx) => {
   return ctx.text(`Error: ${err.message}`);
 });
