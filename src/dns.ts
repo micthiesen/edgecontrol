@@ -41,6 +41,7 @@ export async function validateDns(ssh: SNodeSSH): Promise<PushoverMessage> {
 async function restoreDnsServers() {
   try {
     console.log("Restoring original DNS servers...");
+    if (timeoutId) clearTimeout(timeoutId);
     await withSshConnection(async (ssh) => {
       await setDnsServers(ssh, env.PRIMARY_DNS_SERVERS);
     });
