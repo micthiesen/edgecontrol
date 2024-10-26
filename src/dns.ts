@@ -1,10 +1,12 @@
 import env from "./env";
+import { sendNotification, type PushoverMessage } from "./notify";
 import { parseDnsServers } from "./parsing";
 import { withSshConnection, type SNodeSSH } from "./ssh";
 import { arrayItemsEqual } from "./utils";
 
 let timeoutId: NodeJS.Timeout | null = null;
-const RESTORE_DELAY = 1000 * 60 * 2;
+export const RESTORE_DELAY_MINUTES = 2;
+const RESTORE_DELAY = 1000 * 60 * RESTORE_DELAY_MINUTES;
 
 export async function toggleDns(ssh: SNodeSSH) {
   if (timeoutId) clearTimeout(timeoutId);
@@ -16,17 +18,23 @@ export async function toggleDns(ssh: SNodeSSH) {
   console.log(`Scheduled restore in ${RESTORE_DELAY}ms`);
 }
 
-export async function validateDns(ssh: SNodeSSH): Promise<string> {
+export async function validateDns(ssh: SNodeSSH): Promise<PushoverMessage> {
   console.log("Validating DNS servers...");
   const currentDnsServers = await getDnsServers(ssh);
   console.log(`DNS servers are set to ${currentDnsServers}`);
 
   if (arrayItemsEqual(currentDnsServers, env.PRIMARY_DNS_SERVERS)) {
-    return "DNS servers are valid";
+    return {
+      title: "DNS Servers are valid",
+      message: `Servers: ${currentDnsServers.join(", ")}`,
+    };
   } else {
     await setDnsServers(ssh, env.PRIMARY_DNS_SERVERS);
     console.log(`DNS servers restored to ${env.PRIMARY_DNS_SERVERS}`);
-    return "DNS servers restored";
+    return {
+      title: "DNS Servers restored",
+      message: `Servers: ${currentDnsServers.join(", ")}`,
+    };
   }
 }
 
@@ -35,6 +43,7 @@ async function restoreDnsServers() {
   await withSshConnection(async (ssh) => {
     await setDnsServers(ssh, env.PRIMARY_DNS_SERVERS);
   });
+  await sendNotification({ title: "NextDNS re-enabled", message: "" });
 }
 
 async function getDnsServers(ssh: SNodeSSH) {

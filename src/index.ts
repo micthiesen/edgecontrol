@@ -2,7 +2,8 @@ import { type HttpBindings, serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { logger } from "hono/logger";
 import { timeout } from "hono/timeout";
-import { toggleDns, validateDns } from "./dns";
+import { RESTORE_DELAY_MINUTES, toggleDns, validateDns } from "./dns";
+import { sendNotification } from "./notify";
 import { withSshConnection } from "./ssh";
 
 const app = new Hono<{ Bindings: HttpBindings }>();
@@ -14,14 +15,19 @@ app.onError(async (err, ctx) => {
 app.get("/dns/toggle", async (ctx) => {
   return withSshConnection(async (ssh) => {
     await toggleDns(ssh);
+    await sendNotification({
+      title: "NextDNS temporarily disabled",
+      message: `It will be restored in ${RESTORE_DELAY_MINUTES} minutes`,
+    });
     return ctx.text("DNS servers toggled");
   });
 });
 
 app.get("/dns/validate", async (ctx) => {
   return withSshConnection(async (ssh) => {
-    const dnsServers = await validateDns(ssh);
-    return ctx.text(dnsServers.toString());
+    const message = await validateDns(ssh);
+    await sendNotification(message);
+    return ctx.text(message.title);
   });
 });
 
